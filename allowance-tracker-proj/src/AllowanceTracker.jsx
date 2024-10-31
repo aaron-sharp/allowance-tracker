@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
-import { Button } from './components/ui/button';
-import { Input } from './components/ui/input';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Minus, Plus, PiggyBank, Gift, Wallet } from 'lucide-react';
 
 const AllowanceTracker = () => {
