@@ -4,47 +4,59 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Minus, Plus, PiggyBank, Gift, Wallet } from 'lucide-react';
+import { db } from './firebase';
+import { ref, onValue, set } from 'firebase/database';
 
 const AllowanceTracker = () => {
   const [isAdmin, setIsAdmin] = useState(true);
-  const [accounts, setAccounts] = useState(() => {
-    const savedAccounts = localStorage.getItem('allowanceAccounts');
-    return savedAccounts ? JSON.parse(savedAccounts) : {
-      charlie: { age: 10, spend: 6, save: 2, give: 2 },
-      henry: { age: 8, spend: 4.80, save: 1.60, give: 1.60 },
-      baz: { age: 6, spend: 3.60, save: 1.20, give: 1.20 }
-    };
+  const [accounts, setAccounts] = useState({
+    charlie: { age: 10, spend: 6, save: 2, give: 2 },
+    henry: { age: 8, spend: 4.80, save: 1.60, give: 1.60 },
+    baz: { age: 6, spend: 3.60, save: 1.20, give: 1.20 }
   });
 
-  // Save to localStorage whenever accounts change
+  // Load initial data from Firebase
   useEffect(() => {
-    localStorage.setItem('allowanceAccounts', JSON.stringify(accounts));
-  }, [accounts]);
+    const accountsRef = ref(db, 'accounts');
+    onValue(accountsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setAccounts(data);
+      }
+    });
+  }, []);
+
+  // Save to Firebase whenever accounts change
+  const saveToFirebase = (newAccounts) => {
+    const accountsRef = ref(db, 'accounts');
+    set(accountsRef, newAccounts);
+  };
 
   const adjustBalance = (kid, category, amount) => {
-    setAccounts(prev => ({
-      ...prev,
+    const newAccounts = {
+      ...accounts,
       [kid]: {
-        ...prev[kid],
-        [category]: Math.max(0, Number((prev[kid][category] + amount).toFixed(2)))
+        ...accounts[kid],
+        [category]: Math.max(0, Number((accounts[kid][category] + amount).toFixed(2)))
       }
-    }));
+    };
+    setAccounts(newAccounts);
+    saveToFirebase(newAccounts);
   };
 
   const processWeeklyAllowance = () => {
-    setAccounts(prev => {
-      const newAccounts = { ...prev };
-      Object.entries(prev).forEach(([kid, data]) => {
-        const weeklyTotal = data.age;
-        newAccounts[kid] = {
-          ...data,
-          spend: Number((data.spend + (weeklyTotal * 0.6)).toFixed(2)),
-          save: Number((data.save + (weeklyTotal * 0.2)).toFixed(2)),
-          give: Number((data.give + (weeklyTotal * 0.2)).toFixed(2))
-        };
-      });
-      return newAccounts;
+    const newAccounts = { ...accounts };
+    Object.entries(accounts).forEach(([kid, data]) => {
+      const weeklyTotal = data.age;
+      newAccounts[kid] = {
+        ...data,
+        spend: Number((data.spend + (weeklyTotal * 0.6)).toFixed(2)),
+        save: Number((data.save + (weeklyTotal * 0.2)).toFixed(2)),
+        give: Number((data.give + (weeklyTotal * 0.2)).toFixed(2))
+      };
     });
+    setAccounts(newAccounts);
+    saveToFirebase(newAccounts);
   };
 
   const AccountCard = ({ name, data }) => {
@@ -57,6 +69,7 @@ const AllowanceTracker = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {/* Rest of your AccountCard JSX remains the same */}
             <div className="flex items-center gap-2">
               <Wallet className="w-5 h-5" />
               <span className="font-medium">Spend:</span> 
