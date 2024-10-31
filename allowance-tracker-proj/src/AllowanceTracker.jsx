@@ -63,13 +63,12 @@ const AllowanceTracker = () => {
     const [adjustAmount, setAdjustAmount] = useState(1);
 
     return (
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle className="text-xl capitalize">{name}'s Account (Age: {data.age})</CardTitle>
+      <Card className="mb-8 shadow-lg hover:shadow-xl transition-shadow duration-200 border-2">
+        <CardHeader className="bg-gray-50">
+          <CardTitle className="text-2xl capitalize text-blue-900">{name}'s Account (Age: {data.age})</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="space-y-4">
-            {/* Rest of your AccountCard JSX remains the same */}
             <div className="flex items-center gap-2">
               <Wallet className="w-5 h-5" />
               <span className="font-medium">Spend:</span> 
